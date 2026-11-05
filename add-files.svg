@@ -1,0 +1,13 @@
+<svg width="51" height="51" viewBox="0 0 51 51" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle opacity="0.2" cx="25.5" cy="25.5" r="25.5" fill="#33C69F"/>
+    <rect x="14.5363" y="16.6331" width="16" height="23" transform="rotate(-0.464413 14.5363 16.6331)" fill="#DEE7EE" stroke="#47687D"/>
+    <rect x="12.5201" y="14.6497" width="16" height="23" transform="rotate(-0.464413 12.5201 14.6497)" fill="#EDF3F7" stroke="#47687D"/>
+    <rect x="10.504" y="12.6659" width="16" height="23" transform="rotate(-0.464413 10.504 12.6659)" fill="white" stroke="#47687D"/>
+    <rect x="13.0242" y="15.1455" width="11" height="1" transform="rotate(-0.464413 13.0242 15.1455)" fill="#33C69F"/>
+    <rect x="13.0405" y="17.1455" width="7" height="1" transform="rotate(-0.464413 13.0405 17.1455)" fill="#33C69F"/>
+    <rect x="13.0728" y="21.1455" width="11" height="3" transform="rotate(-0.464413 13.0728 21.1455)" fill="#DEE7EE"/>
+    <rect x="13.0728" y="21.1455" width="5" height="3" transform="rotate(-0.464413 13.0728 21.1455)" fill="#DEE7EE"/>
+    <rect x="13.1133" y="26.145" width="11" height="7" transform="rotate(-0.464413 13.1133 26.145)" fill="#DEE7EE"/>
+    <rect x="13.1133" y="26.145" width="11" height="7" transform="rotate(-0.464413 13.1133 26.145)" fill="#DEE7EE"/>
+    <path d="M33.5406 26.84V24.632H36.3246V21.736H38.5326V24.632H41.3166V26.84H38.5326V29.736H36.3246V26.84H33.5406Z" fill="#33C69F"/>
+</svg>    
