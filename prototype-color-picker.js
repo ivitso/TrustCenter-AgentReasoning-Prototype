@@ -3,7 +3,7 @@
      tag chips, card top borders, the MCP banner, icon circles, primary buttons, icons and
      tints. Each spot keeps its own transparency (a 10% tint stays a 10% tint).
    - AI agent: the "Ask AI Agent" button in the header (wins over the accent).
-   - All Products: the product picker at the left of the header search (default #244d61).
+   - All Products: the product picker at the left of the header search (default #9fb4c1).
    Defaults: accent #004e75, AI agent button #001b28. Set #33c69f to see the app's original green.
    Choices are saved in this browser only (localStorage). The accent is swapped in the
    elements' inline styles, and re-applied when the app re-renders or adds content. */
@@ -11,7 +11,7 @@
   var KEY = 'prototype-color-picker';
   // The app's built-in accent is #33c69f; the prototype's chosen defaults replace it.
   var APP_ACCENT = '#33c69f';
-  var DEFAULTS = { tag: '#004e75', agent: '#001b28', products: '#244d61' };
+  var DEFAULTS = { tag: '#004e75', agent: '#001b28', products: '#9fb4c1' };
   var KEYS = ['tag', 'agent', 'products'];
   function eff(k) { return state[k] || DEFAULTS[k]; }
   var state = load();
