@@ -108,9 +108,9 @@
     root.id = 'prototype-color-picker';
     root.innerHTML =
       '<style>' +
-      '#prototype-color-picker{position:fixed;right:16px;bottom:16px;z-index:2147483000;font:13px/1.35 "Instrument Sans",system-ui,sans-serif;color:#162d3c}' +
-      '#prototype-color-picker .pcp-toggle{display:flex;align-items:center;gap:6px;height:36px;padding:0 14px;border:0;border-radius:999px;background:#001b28;color:#fff;font:inherit;font-weight:500;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2)}' +
-      '#prototype-color-picker .pcp-panel{position:absolute;right:0;bottom:44px;width:240px;padding:14px;border-radius:12px;background:#fff;box-shadow:0 8px 28px rgba(0,27,40,.22);border:1px solid #d6e1ea}' +
+      '#prototype-color-picker{position:fixed;left:115px;bottom:8px;z-index:2147483000;font:13px/1.35 "Instrument Sans",system-ui,sans-serif;color:#162d3c}' +
+      '#prototype-color-picker .pcp-toggle{display:flex;align-items:center;gap:6px;height:32px;padding:0 14px;border:0;border-radius:999px;background:#001b28;color:#fff;font:inherit;font-weight:500;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2)}' +
+      '#prototype-color-picker .pcp-panel{position:absolute;left:0;bottom:40px;width:240px;padding:14px;border-radius:12px;background:#fff;box-shadow:0 8px 28px rgba(0,27,40,.22);border:1px solid #d6e1ea}' +
       '#prototype-color-picker .pcp-panel[hidden]{display:none}' +
       '#prototype-color-picker .pcp-title{font-weight:600;margin:0 0 10px}' +
       '#prototype-color-picker label{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 10px}' +
@@ -129,6 +129,7 @@
       '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3a9 9 0 0 0 0 18c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16a5 5 0 0 0 5-5c0-4.42-4.03-8-9-8Zm-5.5 9a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Zm3-4a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Zm3 4a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Z"/></svg>' +
       'Colors</button>';
     document.body.appendChild(root);
+    followInspector(root);
 
     var panel = root.querySelector('.pcp-panel');
     var toggle = root.querySelector('.pcp-toggle');
@@ -163,6 +164,41 @@
       });
       apply();
     });
+  }
+
+  // Sit 8px to the right of the chat Inspector (bottom-left), and follow it as it opens and closes.
+  function followInspector(root) {
+    var box = null, ro = null, queued = false;
+    var findBox = function () {
+      // The Inspector is a fixed element labelled "Inspector": a pill when closed, a panel when open.
+      var walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+      var n;
+      while ((n = walk.nextNode())) {
+        if (n.nodeValue.trim() !== 'Inspector' || root.contains(n)) continue;
+        var el = n.parentElement;
+        while (el && getComputedStyle(el).position !== 'fixed') el = el.parentElement;
+        if (el) return el;
+      }
+      return null;
+    };
+    var place = function () {
+      queued = false;
+      if (!box || !box.isConnected) {
+        box = findBox();
+        if (ro) ro.disconnect();
+        if (!box) return;
+        ro = new ResizeObserver(schedule);
+        ro.observe(box);
+      }
+      var r = box.getBoundingClientRect();
+      root.style.left = Math.round(r.right + 8) + 'px';
+      root.style.bottom = Math.round(window.innerHeight - r.bottom) + 'px';
+    };
+    var schedule = function () { if (!queued) { queued = true; requestAnimationFrame(place); } };
+    place();
+    new MutationObserver(function () { if (!box || !box.isConnected) schedule(); })
+      .observe(document.body, { childList: true, subtree: true });
+    window.addEventListener('resize', schedule);
   }
 
   function row(k, label) {
