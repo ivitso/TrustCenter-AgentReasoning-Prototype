@@ -3,6 +3,7 @@
      tag chips, card top borders, the MCP banner, icon circles, primary buttons, icons and
      tints. Each spot keeps its own transparency (a 10% tint stays a 10% tint).
    - AI agent: the "Ask AI Agent" button in the header (wins over the accent).
+   - All Products: the product picker at the left of the header search (default #244d61).
    Defaults: accent #004e75, AI agent button #001b28. Set #33c69f to see the app's original green.
    Choices are saved in this browser only (localStorage). The accent is swapped in the
    elements' inline styles, and re-applied when the app re-renders or adds content. */
@@ -10,7 +11,8 @@
   var KEY = 'prototype-color-picker';
   // The app's built-in accent is #33c69f; the prototype's chosen defaults replace it.
   var APP_ACCENT = '#33c69f';
-  var DEFAULTS = { tag: '#004e75', agent: '#001b28' };
+  var DEFAULTS = { tag: '#004e75', agent: '#001b28', products: '#244d61' };
+  var KEYS = ['tag', 'agent', 'products'];
   function eff(k) { return state[k] || DEFAULTS[k]; }
   var state = load();
 
@@ -99,6 +101,11 @@
     if (eff('agent') !== APP_ACCENT) {
       css += '[data-fs-element="tc-agent-ask-conveyorai-button"]{background-color:' + eff('agent') + '!important;color:' + textOn(eff('agent')) + '!important}';
     }
+    // The "All Products" segment of the header search pill, with text that stays readable on it.
+    var p = eff('products'), pt = textOn(p);
+    css += '[id^="tc-search"] .min-w-34{background-color:' + p + '!important}' +
+      '[id^="tc-search"] .min-w-34 span{color:' + pt + '!important}' +
+      '[id^="tc-search"] .min-w-34 path{stroke:' + pt + '!important}';
     style.textContent = css;
     if (document.body) recolorAll();
   }
@@ -123,6 +130,7 @@
       '<p class="pcp-title">Colors</p>' +
       row('tag', 'Accent (tags &amp; highlights)') +
       row('agent', 'AI agent button') +
+      row('products', 'All Products picker') +
       '<button type="button" class="pcp-reset">Reset to defaults</button>' +
       '</div>' +
       '<button type="button" class="pcp-toggle" aria-expanded="false">' +
@@ -138,7 +146,7 @@
       toggle.setAttribute('aria-expanded', String(!panel.hidden));
     });
 
-    ['tag', 'agent'].forEach(function (k) {
+    KEYS.forEach(function (k) {
       var color = root.querySelector('[data-k="' + k + '"][type=color]');
       var text = root.querySelector('[data-k="' + k + '"][type=text]');
       var set = function (v, from) {
@@ -158,7 +166,7 @@
     root.querySelector('.pcp-reset').addEventListener('click', function () {
       state = {};
       try { localStorage.removeItem(KEY); } catch (e) {}
-      ['tag', 'agent'].forEach(function (k) {
+      KEYS.forEach(function (k) {
         root.querySelector('[data-k="' + k + '"][type=color]').value = DEFAULTS[k];
         root.querySelector('[data-k="' + k + '"][type=text]').value = DEFAULTS[k];
       });
