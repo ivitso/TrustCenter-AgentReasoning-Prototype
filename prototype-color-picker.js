@@ -3,11 +3,15 @@
      tag chips, card top borders, the MCP banner, icon circles, primary buttons, icons and
      tints. Each spot keeps its own transparency (a 10% tint stays a 10% tint).
    - AI agent: the "Ask AI Agent" button in the header (wins over the accent).
+   Defaults: accent #004e75, AI agent button #001b28. Set #33c69f to see the app's original green.
    Choices are saved in this browser only (localStorage). The accent is swapped in the
    elements' inline styles, and re-applied when the app re-renders or adds content. */
 (function () {
   var KEY = 'prototype-color-picker';
-  var DEFAULTS = { tag: '#33c69f', agent: '#33c69f' };
+  // The app's built-in accent is #33c69f; the prototype's chosen defaults replace it.
+  var APP_ACCENT = '#33c69f';
+  var DEFAULTS = { tag: '#004e75', agent: '#001b28' };
+  function eff(k) { return state[k] || DEFAULTS[k]; }
   var state = load();
 
   function load() {
@@ -51,8 +55,8 @@
     ACCENT_RE.lastIndex = 0;
     if (!ACCENT_RE.test(orig)) return;
     var next = orig;
-    if (state.tag) {
-      var rgb = rgbOf(state.tag);
+    if (eff('tag') !== APP_ACCENT) {
+      var rgb = rgbOf(eff('tag'));
       next = orig.replace(ACCENT_RE, function (m, a) {
         return a !== undefined ? 'rgba(' + rgb + ', ' + a + ')' : 'rgb(' + rgb + ')';
       });
@@ -92,8 +96,8 @@
 
   function apply() {
     var css = '';
-    if (state.agent) {
-      css += '[data-fs-element="tc-agent-ask-conveyorai-button"]{background-color:' + state.agent + '!important;color:' + textOn(state.agent) + '!important}';
+    if (eff('agent') !== APP_ACCENT) {
+      css += '[data-fs-element="tc-agent-ask-conveyorai-button"]{background-color:' + eff('agent') + '!important;color:' + textOn(eff('agent')) + '!important}';
     }
     style.textContent = css;
     if (document.body) recolorAll();
