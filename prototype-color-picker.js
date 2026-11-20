@@ -1,8 +1,10 @@
 /* Prototype color picker: a small floating panel for trying out two colors live.
-   - Tag text: the "5 Documents / 232 FAQs / 1 Badges / MCP Connector" chips (text, icon and tint).
-   - AI agent: the "Ask AI Agent" button in the header.
-   Choices are saved in this browser only (localStorage) and applied with CSS overrides,
-   so the built app bundle is untouched. */
+   - Accent: every use of the Trust Center accent green (#33c69f) on the page: the summary
+     tag chips, card top borders, the MCP banner, icon circles, primary buttons, icons and
+     tints. Each spot keeps its own transparency (a 10% tint stays a 10% tint).
+   - AI agent: the "Ask AI Agent" button in the header (wins over the accent).
+   Choices are saved in this browser only (localStorage). The accent is swapped in the
+   elements' inline styles, and re-applied when the app re-renders or adds content. */
 (function () {
   var KEY = 'prototype-color-picker';
   var DEFAULTS = { tag: '#33c69f', agent: '#33c69f' };
@@ -27,18 +29,74 @@
   style.id = 'prototype-color-picker-style';
   document.head.appendChild(style);
 
+  // --- Accent swap in inline styles -------------------------------------------------
+  // The app writes the accent as rgb(51, 198, 159), rgba(51, 198, 159, a) or #33c69f.
+  var ACCENT_RE = /rgba?\(\s*51\s*,\s*198\s*,\s*159\s*(?:,\s*([\d.]+%?)\s*)?\)|#33c69f\b/gi;
+  var origStyle = new WeakMap();   // element -> its style text as the app last wrote it
+  var ourStyle = new WeakMap();    // element -> the style text we wrote over it
+  var touched = new Set();         // elements we have rewritten (for reset)
+  var writing = false;
+
+  function rgbOf(hex) {
+    var n = parseInt(hex.slice(1), 16);
+    return [n >> 16 & 255, n >> 8 & 255, n & 255].join(', ');
+  }
+
+  function recolor(el) {
+    var cur = el.getAttribute('style');
+    if (cur == null) return;
+    // If the app changed the style since we last wrote it, that is the new original.
+    if (ourStyle.get(el) !== cur) origStyle.set(el, cur);
+    var orig = origStyle.get(el);
+    ACCENT_RE.lastIndex = 0;
+    if (!ACCENT_RE.test(orig)) return;
+    var next = orig;
+    if (state.tag) {
+      var rgb = rgbOf(state.tag);
+      next = orig.replace(ACCENT_RE, function (m, a) {
+        return a !== undefined ? 'rgba(' + rgb + ', ' + a + ')' : 'rgb(' + rgb + ')';
+      });
+    }
+    if (next !== cur) {
+      writing = true;
+      el.setAttribute('style', next);
+      writing = false;
+    }
+    ourStyle.set(el, next);
+    touched.add(el);
+  }
+
+  function recolorTree(node) {
+    if (!node || node.nodeType !== 1 || node.closest('#prototype-color-picker')) return;
+    if (node.hasAttribute('style')) recolor(node);
+    var list = node.querySelectorAll('[style]');
+    for (var i = 0; i < list.length; i++) {
+      if (!list[i].closest('#prototype-color-picker')) recolor(list[i]);
+    }
+  }
+
+  function recolorAll() {
+    // Elements we touched earlier, even if their style no longer mentions the accent.
+    touched.forEach(function (el) { if (el.isConnected) recolor(el); else touched.delete(el); });
+    recolorTree(document.body);
+  }
+
+  new MutationObserver(function (records) {
+    if (writing) return;
+    for (var i = 0; i < records.length; i++) {
+      var r = records[i];
+      if (r.type === 'attributes') recolor(r.target);
+      else for (var j = 0; j < r.addedNodes.length; j++) recolorTree(r.addedNodes[j]);
+    }
+  }).observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ['style'] });
+
   function apply() {
     var css = '';
-    if (state.tag) {
-      css += 'button[style*="--summary-tag-bg"]{' +
-        '--summary-tag-bg:color-mix(in srgb,' + state.tag + ' 10%,transparent)!important;' +
-        '--summary-tag-bg-hover:color-mix(in srgb,' + state.tag + ' 20%,transparent)!important}' +
-        'button[style*="--summary-tag-bg"] p,button[style*="--summary-tag-bg"] svg{color:' + state.tag + '!important}';
-    }
     if (state.agent) {
       css += '[data-fs-element="tc-agent-ask-conveyorai-button"]{background-color:' + state.agent + '!important;color:' + textOn(state.agent) + '!important}';
     }
     style.textContent = css;
+    if (document.body) recolorAll();
   }
 
   function build() {
@@ -59,7 +117,7 @@
       '</style>' +
       '<div class="pcp-panel" hidden role="dialog" aria-label="Color picker">' +
       '<p class="pcp-title">Colors</p>' +
-      row('tag', 'Tag text') +
+      row('tag', 'Accent (tags &amp; highlights)') +
       row('agent', 'AI agent button') +
       '<button type="button" class="pcp-reset">Reset to defaults</button>' +
       '</div>' +
