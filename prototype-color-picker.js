@@ -17,13 +17,11 @@
   // Badge tiles: one color each, from the page's blues, greens and greys. [badge key, label, default]
   var BADGES = [
     ['soc2-type-2', 'SOC 2', '#004e75'],
-    ['iso-27001', 'ISO 27001', '#0b3a52'],
-    ['iso-42001', 'ISO 42001', '#1a7a62'],
-    ['gdpr', 'GDPR', '#3d6e8c'],
-    ['ccpa', 'CCPA', '#5b6b75'],
-    ['hipaa', 'HIPAA', '#0f5c44'],
-    ['CSA STAR 1', 'CSA STAR', '#2c6a91'],
-    ['pen-test', 'Pen test', '#37434b']
+    ['iso-27001', 'ISO 27001', '#1a7a62'],
+    ['iso-42001', 'ISO 42001', '#37434b'],
+    ['gdpr', 'GDPR', '#2c6a91'],
+    ['ccpa', 'CCPA', '#0f5c44'],
+    ['hipaa', 'HIPAA', '#5b6b75']
   ];
   BADGES.forEach(function (b) { DEFAULTS['badge:' + b[0]] = b[2]; KEYS.push('badge:' + b[0]); });
   function eff(k) { return state[k] || DEFAULTS[k]; }
