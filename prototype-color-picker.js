@@ -4,6 +4,7 @@
      tints. Each spot keeps its own transparency (a 10% tint stays a 10% tint).
    - AI agent: the "Ask AI Agent" button in the header (wins over the accent).
    - All Products: the product picker at the left of the header search (default #9fb4c1).
+   - Agent / Your messages: the chat bubbles for the agent's replies and the visitor's messages.
    - Badges: one color per trust badge tile (blues, greens and greys by default).
    Defaults: accent #004e75, AI agent button #001b28. Set #33c69f to see the app's original green.
    Choices are saved in this browser only (localStorage). The accent is swapped in the
@@ -12,8 +13,8 @@
   var KEY = 'prototype-color-picker';
   // The app's built-in accent is #33c69f; the prototype's chosen defaults replace it.
   var APP_ACCENT = '#33c69f';
-  var DEFAULTS = { tag: '#004e75', agent: '#001b28', products: '#9fb4c1' };
-  var KEYS = ['tag', 'agent', 'products'];
+  var DEFAULTS = { tag: '#004e75', agent: '#001b28', products: '#9fb4c1', botMsg: '#f4f7f9', userMsg: '#004e75' };
+  var KEYS = ['tag', 'agent', 'products', 'botMsg', 'userMsg'];
   // Badge tiles: one color each, from the page's blues, greens and greys. [badge key, label, default]
   var BADGES = [
     ['soc2-type-2', 'SOC 2', '#004e75'],
@@ -158,6 +159,12 @@
     css += '[id^="tc-search"] .min-w-34{background-color:' + p + '!important}' +
       '[id^="tc-search"] .min-w-34 span{color:' + pt + '!important}' +
       '[id^="tc-search"] .min-w-34 path{stroke:' + pt + '!important}';
+    // Chat bubbles: the agent's replies (left) and the visitor's messages (right, .self-end).
+    var MSG = '[data-component="agent-chat-response"]';
+    var bm = eff('botMsg'), um = eff('userMsg');
+    css += MSG + ':not(.self-end){background-color:' + bm + '!important;color:' + textOn(bm) + '!important}' +
+      MSG + '.self-end{background-color:' + um + '!important;color:' + textOn(um) + '!important}' +
+      MSG + '.self-end *{color:inherit!important}';
     style.textContent = css;
     if (document.body) recolorAll();
   }
@@ -185,6 +192,8 @@
       row('tag', 'Accent (tags &amp; highlights)') +
       row('agent', 'AI agent button') +
       row('products', 'All Products picker') +
+      row('botMsg', 'Agent messages') +
+      row('userMsg', 'Your messages') +
       '<p class="pcp-title pcp-sub">Badges</p>' +
       BADGES.map(function (b) { return row('badge:' + b[0], b[1]); }).join('') +
       '<button type="button" class="pcp-reset">Reset to defaults</button>' +
