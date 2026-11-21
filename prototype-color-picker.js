@@ -4,6 +4,7 @@
      tints. Each spot keeps its own transparency (a 10% tint stays a 10% tint).
    - AI agent: the "Ask AI Agent" button in the header (wins over the accent).
    - All Products: the product picker at the left of the header search (default #9fb4c1).
+   - Badges: one color per trust badge tile (blues, greens and greys by default).
    Defaults: accent #004e75, AI agent button #001b28. Set #33c69f to see the app's original green.
    Choices are saved in this browser only (localStorage). The accent is swapped in the
    elements' inline styles, and re-applied when the app re-renders or adds content. */
@@ -13,6 +14,18 @@
   var APP_ACCENT = '#33c69f';
   var DEFAULTS = { tag: '#004e75', agent: '#001b28', products: '#9fb4c1' };
   var KEYS = ['tag', 'agent', 'products'];
+  // Badge tiles: one color each, from the page's blues, greens and greys. [badge key, label, default]
+  var BADGES = [
+    ['soc2-type-2', 'SOC 2', '#004e75'],
+    ['iso-27001', 'ISO 27001', '#0b3a52'],
+    ['iso-42001', 'ISO 42001', '#1a7a62'],
+    ['gdpr', 'GDPR', '#3d6e8c'],
+    ['ccpa', 'CCPA', '#5b6b75'],
+    ['hipaa', 'HIPAA', '#0f5c44'],
+    ['CSA STAR 1', 'CSA STAR', '#2c6a91'],
+    ['pen-test', 'Pen test', '#37434b']
+  ];
+  BADGES.forEach(function (b) { DEFAULTS['badge:' + b[0]] = b[2]; KEYS.push('badge:' + b[0]); });
   function eff(k) { return state[k] || DEFAULTS[k]; }
   var state = load();
 
@@ -72,8 +85,41 @@
     touched.add(el);
   }
 
+  // --- Badge tiles ---------------------------------------------------------------------
+  // Each badge is an <img alt="badge key"> showing a built-in SVG tile. We keep the app's
+  // original SVG per badge and redraw it with the chosen background (and readable text).
+  var SVG_PREFIX = 'data:image/svg+xml;base64,';
+  var badgeOrig = {};          // badge key -> original SVG text
+  var ourSrc = new Set();      // srcs we generated, so they are not mistaken for originals
+
+  function recolorBadge(img) {
+    var key = img.getAttribute('alt');
+    if (!key || !('badge:' + key in DEFAULTS)) return;
+    var src = img.getAttribute('src') || '';
+    if (src.indexOf(SVG_PREFIX) !== 0) return;
+    if (!ourSrc.has(src)) badgeOrig[key] = atob(src.slice(SVG_PREFIX.length));
+    var svg = badgeOrig[key];
+    var m = svg && svg.match(/<rect width="120" height="120" fill="(#[0-9a-fA-F]{6})"/);
+    if (!m) return;
+    var bg = eff('badge:' + key);
+    var out = svg.split(m[1]).join(bg).split('#ffffff').join(textOn(bg));
+    var next = SVG_PREFIX + btoa(out);
+    if (next === src) return;
+    ourSrc.add(next);
+    writing = true;
+    img.setAttribute('src', next);
+    writing = false;
+  }
+
+  function recolorBadges(node) {
+    if (node.tagName === 'IMG') return recolorBadge(node);
+    var imgs = node.querySelectorAll('img[alt]');
+    for (var i = 0; i < imgs.length; i++) recolorBadge(imgs[i]);
+  }
+
   function recolorTree(node) {
     if (!node || node.nodeType !== 1 || node.closest('#prototype-color-picker')) return;
+    recolorBadges(node);
     if (node.hasAttribute('style')) recolor(node);
     var list = node.querySelectorAll('[style]');
     for (var i = 0; i < list.length; i++) {
@@ -91,10 +137,12 @@
     if (writing) return;
     for (var i = 0; i < records.length; i++) {
       var r = records[i];
-      if (r.type === 'attributes') recolor(r.target);
+      if (r.type === 'attributes') {
+        if (r.attributeName === 'src') recolorBadge(r.target); else recolor(r.target);
+      }
       else for (var j = 0; j < r.addedNodes.length; j++) recolorTree(r.addedNodes[j]);
     }
-  }).observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ['style'] });
+  }).observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ['style', 'src'] });
 
   function apply() {
     var css = '';
@@ -119,7 +167,9 @@
       '#prototype-color-picker .pcp-toggle{display:flex;align-items:center;gap:6px;height:32px;padding:0 14px;border:0;border-radius:999px;background:#001b28;color:#fff;font:inherit;font-weight:500;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2)}' +
       '#prototype-color-picker .pcp-panel{position:absolute;left:0;bottom:40px;width:240px;padding:14px;border-radius:12px;background:#fff;box-shadow:0 8px 28px rgba(0,27,40,.22);border:1px solid #d6e1ea}' +
       '#prototype-color-picker .pcp-panel[hidden]{display:none}' +
+      '#prototype-color-picker .pcp-panel{max-height:calc(100vh - 72px);overflow-y:auto}' +
       '#prototype-color-picker .pcp-title{font-weight:600;margin:0 0 10px}' +
+      '#prototype-color-picker .pcp-sub{margin-top:14px;padding-top:12px;border-top:1px solid #d6e1ea}' +
       '#prototype-color-picker label{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 10px}' +
       '#prototype-color-picker .pcp-field{display:flex;align-items:center;gap:6px}' +
       '#prototype-color-picker input[type=color]{width:32px;height:28px;padding:0;border:1px solid #d6e1ea;border-radius:6px;background:none;cursor:pointer}' +
@@ -131,6 +181,8 @@
       row('tag', 'Accent (tags &amp; highlights)') +
       row('agent', 'AI agent button') +
       row('products', 'All Products picker') +
+      '<p class="pcp-title pcp-sub">Badges</p>' +
+      BADGES.map(function (b) { return row('badge:' + b[0], b[1]); }).join('') +
       '<button type="button" class="pcp-reset">Reset to defaults</button>' +
       '</div>' +
       '<button type="button" class="pcp-toggle" aria-expanded="false">' +
