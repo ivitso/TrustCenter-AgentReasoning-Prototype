@@ -13,15 +13,15 @@
   var KEY = 'prototype-color-picker';
   // The app's built-in accent is #33c69f; the prototype's chosen defaults replace it.
   var APP_ACCENT = '#33c69f';
-  var DEFAULTS = { tag: '#004e75', agent: '#001b28', products: '#9fb4c1', botMsg: '#f4f7f9', userMsg: '#004e75' };
+  var DEFAULTS = { tag: '#004e75', agent: '#001b28', products: '#9fb4c1', botMsg: '#f4f7f9', userMsg: '#c5ddec' };
   var KEYS = ['tag', 'agent', 'products', 'botMsg', 'userMsg'];
   // Badge tiles: one color each, from the page's blues, greens and greys. [badge key, label, default]
   var BADGES = [
-    ['soc2-type-2', 'SOC 2', '#004e75'],
-    ['iso-27001', 'ISO 27001', '#1a7a62'],
+    ['soc2-type-2', 'SOC 2', '#0f3548'],
+    ['iso-27001', 'ISO 27001', '#185948'],
     ['iso-42001', 'ISO 42001', '#37434b'],
-    ['gdpr', 'GDPR', '#2c6a91'],
-    ['ccpa', 'CCPA', '#0f5c44'],
+    ['gdpr', 'GDPR', '#595681'],
+    ['ccpa', 'CCPA', '#734a5e'],
     ['hipaa', 'HIPAA', '#5b6b75']
   ];
   BADGES.forEach(function (b) { DEFAULTS['badge:' + b[0]] = b[2]; KEYS.push('badge:' + b[0]); });
