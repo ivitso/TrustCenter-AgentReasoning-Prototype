@@ -49,6 +49,7 @@
   // --- Accent swap in inline styles -------------------------------------------------
   // The app writes the accent as rgb(51, 198, 159), rgba(51, 198, 159, a) or #33c69f.
   var ACCENT_RE = /rgba?\(\s*51\s*,\s*198\s*,\s*159\s*(?:,\s*([\d.]+%?)\s*)?\)|#33c69f\b/gi;
+  var SOLID_ACCENT_BG_RE = /background(?:-color)?\s*:\s*(?:rgb\(\s*51\s*,\s*198\s*,\s*159\s*\)|rgba\(\s*51\s*,\s*198\s*,\s*159\s*,\s*1\s*\)|#33c69f)/i;
   var origStyle = new WeakMap();   // element -> its style text as the app last wrote it
   var ourStyle = new WeakMap();    // element -> the style text we wrote over it
   var touched = new Set();         // elements we have rewritten (for reset)
@@ -73,6 +74,11 @@
       next = orig.replace(ACCENT_RE, function (m, a) {
         return a !== undefined ? 'rgba(' + rgb + ', ' + a + ')' : 'rgb(' + rgb + ')';
       });
+      // A solid accent background (a primary button, say) came with text picked for the light
+      // green; pick the text again for the new accent so it stays readable.
+      if (SOLID_ACCENT_BG_RE.test(orig) && /(^|;)\s*color\s*:/.test(orig)) {
+        next = next.replace(/(^|;)(\s*)color\s*:[^;]*/g, '$1$2color: ' + textOn(eff('tag')));
+      }
     }
     if (next !== cur) {
       writing = true;
